@@ -2,7 +2,7 @@
 
 float EvalState::count_pieces(const Board& b, int is_color) {
   if( is_color != IS_RED && is_color != IS_WHITE )
-    throw GameEx("eval_state_piece_count", "invalid color", is_color);
+    throw GameEx("EvalState::count_pieces", "invalid color", is_color);
 
   int enemy_color = (is_color == IS_RED) ? IS_WHITE : IS_RED;
   int total = 0;
@@ -23,8 +23,8 @@ float EvalState::count_pieces(const Board& b, int is_color) {
 
 float EvalState::count_kings(const Board& b, int is_color) {
   if( is_color != IS_RED && is_color != IS_WHITE )
-    throw GameEx("eval_state_piece_count", "invalid color", 
-		 is_color);
+    throw GameEx("EvalState::piece_kings", "invalid color", is_color);
+
   int total = 0;
   int w = b.get_width();
   int h = b.get_height();
@@ -38,6 +38,35 @@ float EvalState::count_kings(const Board& b, int is_color) {
   }
   
   return static_cast<float>(total);  
+}
+
+float EvalState::defense(const Board& b, int is_color) {
+  if( is_color != IS_RED && is_color != IS_WHITE )
+    throw GameEx("EvalState::defense", "invalid color", is_color);
+  
+  const set<Loc>& locs = Board::valid_locs();
+  int dy = (is_color == IS_RED) ? -1 : 1;
+  int ysafe = (is_color == IS_RED) ? 0 : BOARD_HEIGHT-1;
+  int total = 0;
+
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    if( b.get(*i) & is_color ) {
+      const Loc l(*i);
+      if( l.y == ysafe ) {  total++;  continue;  }  //if all the way back
+
+      if( l.x > 0 ) {              //check to the left
+	if( b.get( Loc(l.x-1, l.y+dy) ) != EMPTY ) total++;
+      } 
+      else total++;
+
+      if( l.x < BOARD_WIDTH-1 ) {  //check to the right
+	if( b.get( Loc(l.x+1, l.y+dy) ) != EMPTY ) total++;
+      }
+      else total++;
+    }
+  }
+
+  return total;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

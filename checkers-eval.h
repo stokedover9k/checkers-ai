@@ -14,8 +14,15 @@
 using namespace std;
 
 namespace EvalState {
+  /* count player's pieces (+1), subtract opponent's pieces (-1) */
   float count_pieces(const Board& b, int is_color);
+
+  /* count player's kings (+1), subtract opponent's kings (-1) */
   float count_kings(const Board& b, int is_color);
+
+  /* for each of player's pieces count +1 for each of the two neighbores
+     behind it that are not empty. */
+  float defense(const Board& b, int is_color);
 };
 
 typedef list<Loc> Action;

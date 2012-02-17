@@ -33,6 +33,8 @@ ostream& operator << (ostream& s, const Move& m) {
 }
   
 ///////////////////////////////////////////////////////////////////////////////
+set<Loc> *Board::_valid_locs = 0;
+
 Board::Board() {
   empty();
 }
@@ -133,6 +135,17 @@ bool Board::square_valid(int v) {
   if( v == RED_KING   ) return true;
   if( v == WHITE_KING ) return true;
   return false;
+}
+
+const set<Loc>& Board::valid_locs(void) {
+  if( _valid_locs == 0 ) {
+    _valid_locs = new set<Loc>();
+    for( int y=0; y<BOARD_HEIGHT; y++ )
+      for( int x=0; x<BOARD_WIDTH; x++ )
+	if( (x+y) % 2 == 1 )
+	  _valid_locs->insert(Loc(x,y));
+  }
+  return *_valid_locs;
 }
 
 bool Board::can_jump_from(const Loc& l) const {

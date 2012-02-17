@@ -19,10 +19,10 @@ int main(int argc, char* argv[]) {
   Checkers game;
 
   //Player *p1 = new First_Player(string("Sisyphus"), IS_RED);
-  Player *p1 = new Minimax_Player(string("Sisyphus"), EvalState::count_kings, 
-				  7, IS_RED);
+  Player *p1 = new Minimax_Player(string("Sisyphus"), EvalState::defense, 
+				  5, IS_RED);
   Player *p2 = new Minimax_Player(string("Stoked"), EvalState::count_pieces, 
-				  7, IS_WHITE);
+				  5, IS_WHITE);
 
   const int r = RED;
   const int R = RED_KING;

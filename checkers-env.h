@@ -88,6 +88,7 @@ class Board {
   int eval_move(const Move&, int color) const;
 
   static bool square_valid(int val);
+  static const set<Loc>& valid_locs(void);
 
   /* looks at the board, so will return false if if loc is empty */
   bool can_jump_from(const Loc&) const;
@@ -108,6 +109,8 @@ class Board {
   void setloc(int x, int y, int val);
 
   int board[BOARD_WIDTH * BOARD_HEIGHT / 2];
+
+  static set<Loc> *_valid_locs;
 };
 
 #endif

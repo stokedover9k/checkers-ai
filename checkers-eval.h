@@ -23,6 +23,11 @@ namespace EvalState {
   /* for each of player's pieces count +1 for each of the two neighbores
      behind it that are not empty. */
   float defense(const Board& b, int is_color);
+
+  /* for each of player's pieces, count +1 for each direction (a1->c3 = c3->a1, does
+     NOT get counted twice) in which the piece cannot be taken. The count is then
+     multiplied by the number of opponent's kings + 1. */
+  float defense_kings(const Board& b, int is_color);
 };
 
 typedef list<Loc> Action;

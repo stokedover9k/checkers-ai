@@ -55,18 +55,50 @@ float EvalState::defense(const Board& b, int is_color) {
       if( l.y == ysafe ) {  total++;  continue;  }  //if all the way back
 
       if( l.x > 0 ) {              //check to the left
-	if( b.get( Loc(l.x-1, l.y+dy) ) != EMPTY ) total++;
+	if( b.get( Loc(l.x-1, l.y+dy) ) & is_color ) total++;
       } 
       else total++;
 
       if( l.x < BOARD_WIDTH-1 ) {  //check to the right
-	if( b.get( Loc(l.x+1, l.y+dy) ) != EMPTY ) total++;
+	if( b.get( Loc(l.x+1, l.y+dy) ) & is_color ) total++;
       }
       else total++;
     }
   }
 
-  return total;
+  return static_cast<float>(total);
+}
+
+float EvalState::defense_kings(const Board& b, int col) {
+  if( col != IS_RED && col != IS_WHITE )
+    throw GameEx("EvalState::defense_kings", "invalid color", col);
+  
+  const set<Loc>& locs = Board::valid_locs();
+  int total = 0;
+  int enemy_kings = 0;
+  int enemy_king_val = (col == IS_RED) ? WHITE_KING : RED_KING;
+
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    int loc_val = b.get(*i);
+    if( loc_val & col ) {
+      const Loc l(*i);
+      if( l.y == 0 &&  l.y == BOARD_HEIGHT-1 )
+	{  total += 2;  continue;  }
+      
+      if( l.x == 0 || l.x == BOARD_WIDTH-1 )
+	{  total += 2;  continue;  }
+
+      if( b.get( Loc(l.x+1, l.y+1) ) & col || b.get( Loc(l.x-1, l.y-1) ) & col )
+	total++;
+      if( b.get( Loc(l.x-1, l.y+1) ) & col || b.get( Loc(l.x+1, l.y-1) ) & col )
+	total++;
+    }
+    else if( loc_val & enemy_king_val ) {
+      enemy_kings++;
+    }
+  }
+  
+  return static_cast<float>(total * (1 + enemy_kings));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

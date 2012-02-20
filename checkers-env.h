@@ -85,7 +85,7 @@ class Board {
 
   /* returns the bitmast describing the proposed move
      NOTE: does not execute the move */
-  int eval_move(const Move&, int color) const;
+  int eval_move(const Move&, int color=EMPTY) const;
 
   static bool square_valid(int val);
   static const set<Loc>& valid_locs(void);

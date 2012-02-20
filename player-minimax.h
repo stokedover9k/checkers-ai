@@ -18,7 +18,7 @@ class Minimax_Player : public Player {
 
  private:
   int _search_depth;
-  //float (*_eval_state)(const Board& s, int c) const;
+  float (*_eval_func_ptr)(const Board& s, int c);
 };
 
 #endif

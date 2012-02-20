@@ -225,6 +225,12 @@ bool Board::get_move_candidates(set<Loc, less<Loc> >& dest, int color) const {
 }
 
 int Board::eval_move(const Move& m, int is_color) const {
+  if( is_color == EMPTY ) {
+    if(      get(m.from) & IS_RED   )  is_color = IS_RED;
+    else if( get(m.from) & IS_WHITE )  is_color = IS_WHITE;
+    else throw GameEx("Board::eval_move", "no color provided for empty location", 
+		      m.from.x+1, m.from.y+1);
+  }
   int dir = (is_color == IS_RED) ? 1 : -1;
   int sq = get(m.from);
 

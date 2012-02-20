@@ -1,6 +1,7 @@
 #include "checkers-eval.h"
 
 float EvalState::count_pieces(const Board& b, int is_color) {
+  
   if( is_color != IS_RED && is_color != IS_WHITE )
     throw GameEx("EvalState::count_pieces", "invalid color", is_color);
 
@@ -101,6 +102,78 @@ float EvalState::defense_kings(const Board& b, int col) {
   return static_cast<float>(total * (1 + enemy_kings));
 }
 
+float EvalState::defense_sides(const Board& b, int col) {
+  if( col != IS_RED && col != IS_WHITE )
+    throw GameEx("EvalState::defense_kings", "invalid color", col);
+  
+  int total = 0;
+  int enemy = (col == IS_RED) ? IS_WHITE : IS_RED;
+  int locval;
+  bool even_width = (BOARD_HEIGHT % 2 == 0) ? true : false;
+  
+  for( int y=0; y<BOARD_HEIGHT; y++ ) {
+    if( y % 2 == 1) {
+      locval = b.get( Loc(0,y) );
+      if( locval & col )        total++;
+      else if( locval & enemy)  total--;
+      
+      if( !even_width ) {
+	locval = b.get( Loc(BOARD_WIDTH-1,y) );
+	if( locval & col )         total++;
+	else if( locval & enemy )  total--;
+      }
+    }
+    else if( even_width ) {
+      locval = b.get( Loc(BOARD_WIDTH-1,y) );
+      if( locval & col )         total++;
+      else if( locval & enemy )  total--;
+    }
+  }
+
+  return static_cast<float>(total);
+}
+
+float EvalState::dynamic_position(const Board& b, int col) {
+  if( col != IS_RED && col != IS_WHITE )
+    throw GameEx("EvalState::defense_kings", "invalid color", col);
+  
+  const set<Loc>& locs = Board::valid_locs();
+  int count_player = 0;
+  int count_enemy  = 0;
+  int *counter = 0;
+
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    int locval = b.get(*i);
+    if( locval == EMPTY )  continue;
+
+    counter = (locval & col) ? &count_player : &count_enemy;
+
+    set<Loc>& neigh = Board::get_neighbours(*i);
+    set<Loc>::iterator neigh_itr;
+    Move m(*i, Loc(0,0));
+
+    for( neigh_itr = neigh.begin(); neigh_itr != neigh.end(); neigh_itr++ ) {
+      m.to = *neigh_itr;
+      if( b.eval_move(m) != INVALID )  (*counter)++;
+    }
+    
+    neigh = Board::get_jump_neighbours(*i);
+    
+    for( neigh_itr = neigh.begin(); neigh_itr != neigh.end(); neigh_itr++ ) {
+      m.to = *neigh_itr;
+      if( b.eval_move(m) != INVALID ) (*counter)++;
+    }
+  }
+
+  if( count_player == 0 ) {
+    return static_cast<float>(-INFINITY+1);
+  }
+  if( count_enemy == 0  ) {
+    return static_cast<float>(INFINITY-1);
+  }
+  return static_cast<float>(count_player) / static_cast<float>(count_enemy);
+}  
+
 ///////////////////////////////////////////////////////////////////////////////
 
 StateVal::StateVal(const Action& a, float v) : _a(a), _v(v)
@@ -136,7 +209,6 @@ float Minimax::max_value(const Board& state, int depth,
 
   if( terminal_state(state, color, depth) ) {
     float v = _eval_state(state, color);
-    //cout << "-max: state terminal: " << v << endl;
     return v;
   }
   
@@ -204,7 +276,7 @@ float Minimax::min_value(const Board& state, int depth,
     //cout << "-min: state terminal: " << v << endl;
     return v;
   }
-  
+
   float min_v = INFINITY;
   float tmp_v;
   Board tmp_b;
@@ -212,9 +284,10 @@ float Minimax::min_value(const Board& state, int depth,
   
   set<Action>& actions = possible_actions(state, color);
   set<Action>::iterator itr;
-  
-  /*
+
+  /*  
   cout << "--possible actions(min): " << actions.size() << endl;
+  cout << state << endl;
   for( set<Action>::const_iterator out_i = actions.begin();
        out_i != actions.end(); out_i++ ) {
     cout << "---a: " << *(*out_i).begin() << "-->";
@@ -242,7 +315,7 @@ float Minimax::min_value(const Board& state, int depth,
     }
 
     tmp_v = max_value(tmp_b, depth-1, alpha, beta, _other_color(color));
-    if( tmp_v < min_v ) {
+    if( tmp_v <= min_v ) {
       min_v = tmp_v;
       min_a = itr;
     }
@@ -255,6 +328,7 @@ float Minimax::min_value(const Board& state, int depth,
 
     beta = (beta < min_v) ? beta : min_v;
   }
+
   _last_min_a = Action(*min_a);
   delete &actions;
   return min_v;
@@ -368,5 +442,6 @@ int Minimax::_other_color(int color) {
 
 float Minimax::_eval_state(const Board& b, int c) {
   if( c == EMPTY ) c = _color;
-  return _eval_state_func_ptr(b, c);
+  float v = _eval_state_func_ptr(b, c);
+  return v;
 }

@@ -8,7 +8,7 @@
 #include "checkers-env.h"
 #include "exceptions.h"
 
-#define INFINITY 10000000
+#define INFINITY 1000000
 #define MINIMAX_MAX_DEPTH 8
 
 using namespace std;
@@ -28,6 +28,15 @@ namespace EvalState {
      NOT get counted twice) in which the piece cannot be taken. The count is then
      multiplied by the number of opponent's kings + 1. */
   float defense_kings(const Board& b, int is_color);
+
+  /* count +1 for each of the player's pieces which are near a wall, -1 for each
+     of the opponent's pieces next to a wall. NOTE: "wall" = side wall. */
+  float defense_sides(const Board& b, int is_color);
+
+  /* counts +1 for each direction each piece can move in (including jumps). Returns
+     the ratio of the player's counts to the opponent's counts. If, no player moves
+     are available, returns -INFINITY. If no enemy moves - returns INFINITY. */
+  float dynamic_position(const Board& b, int is_color);
 };
 
 typedef list<Loc> Action;
@@ -52,7 +61,7 @@ class StateVal {
 class Minimax {
  public:
   Minimax(int c, 
-	  float (*eval_state)(const Board&, int) = &EvalState::count_pieces );
+	  float (*eval_state)(const Board&, int) = EvalState::count_pieces );
 
   StateVal minimax_decision(const Board& state, int depth);
 

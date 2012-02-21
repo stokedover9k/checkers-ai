@@ -18,13 +18,16 @@ using namespace std;
 int main(int argc, char* argv[]) {
   Checkers game;
 
-  Player *p1 = new First_Player(string("Sisyphus"), IS_RED);
+  Player *p1 = new Random_Player(string("Sisyphus"), IS_RED);
+  //Player *p2 = new Random_Player(string("Stoked"),   IS_WHITE);
   /*
-  Player *p1 = new Minimax_Player(string("Sisyphus"), EvalState::dynamic_position, 
-				  5, IS_RED);
-  //*/
-  Player *p2 = new Minimax_Player(string("Stoked"), EvalState::forward_position, 
-				  5, IS_WHITE);
+  Player *p1 = new Minimax_Player(string("Sisyphus"), 
+				  EvalState::dynamic_position, 
+				  5, IS_RED);                      //*/
+
+  Player *p2 = new Minimax_Player(string("Stoked"), 
+				  EvalState::count_pieces,
+				  6, IS_WHITE);                    //*/
 
   const int r = RED;
   const int R = RED_KING;

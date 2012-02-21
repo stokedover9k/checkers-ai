@@ -106,3 +106,26 @@ Loc First_Player::get_jump_dest( const Loc& from, int* move_eval ) {
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool Random_Player::_rand_generator_seeded = false;
+
+Random_Player::Random_Player(const string& n, const int colour, bool seeded ) : 
+  Player(n, colour) { 
+  if( !_rand_generator_seeded && !seeded ) {
+    srand( time(NULL) );
+    _rand_generator_seeded = true;
+  }
+}
+
+list<Loc> Random_Player::get_moves() {
+  set<Action>& actions = possible_actions(board, color);
+  int ind = rand() % actions.size();
+  set<Action>::iterator i;
+  for( i = actions.begin(); ind > 0; ind-- )  i++;
+  Action a(*i);
+  delete &actions;
+  return a;
+}
+

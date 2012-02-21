@@ -1,4 +1,4 @@
-OBJS = main.o checkers-env.o checkers-game.o player.o player-human.o player-first.o player-minimax.o checkers-eval.o exceptions.o
+OBJS = main.o checkers-env.o checkers-game.o player.o player-human.o player-basic.o player-minimax.o checkers-eval.o exceptions.o
 CC = g++
 CFLAGS = -c
 LFLAGS_DB = 
@@ -24,13 +24,13 @@ player.o: player.cpp player.h checkers-env.o
 player-human.o: player-human.cpp player-human.h player.o
 	$(CC) $(CFLAGS) $<
 
-player-first.o: player-first.cpp player-first.h player.o
+player-basic.o: player-basic.cpp player-basic.h player.o
 	$(CC) $(CFLAGS) $<
 
 player-minimax.o: player-minimax.cpp player-minimax.h player.o checkers-eval.o
 	$(CC) $(CFLAGS) $<
 
-main.o: main.cpp checkers-game.o player-first.o player-human.o checkers-eval.o player-minimax.o
+main.o: main.cpp checkers-game.o player-basic.o player-human.o checkers-eval.o player-minimax.o
 	$(CC) $(CFLAGS) $<
 
 

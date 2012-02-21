@@ -3,7 +3,7 @@
 #include "checkers-game.h"
 #include "player.h"
 #include "player-human.h"
-#include "player-first.h"
+#include "player-basic.h"
 #include "player-minimax.h"
 #include "checkers-eval.h"
 #include <string>

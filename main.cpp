@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   Player *p1 = new Minimax_Player(string("Sisyphus"), EvalState::dynamic_position, 
 				  5, IS_RED);
   //*/
-  Player *p2 = new Minimax_Player(string("Stoked"), EvalState::dynamic_position, 
+  Player *p2 = new Minimax_Player(string("Stoked"), EvalState::forward_position, 
 				  5, IS_WHITE);
 
   const int r = RED;

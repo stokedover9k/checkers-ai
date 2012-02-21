@@ -135,7 +135,7 @@ float EvalState::defense_sides(const Board& b, int col) {
 
 float EvalState::dynamic_position(const Board& b, int col) {
   if( col != IS_RED && col != IS_WHITE )
-    throw GameEx("EvalState::defense_kings", "invalid color", col);
+    throw GameEx("EvalState::dynamic_position", "invalid color", col);
   
   const set<Loc>& locs = Board::valid_locs();
   int count_player = 0;
@@ -173,6 +173,29 @@ float EvalState::dynamic_position(const Board& b, int col) {
   }
   return static_cast<float>(count_player) / static_cast<float>(count_enemy);
 }  
+
+float EvalState::forward_position(const Board& b, int col) {
+  if( col != IS_RED && col != IS_WHITE )
+    throw GameEx("EvalState::forward_position", "invalid color", col);
+
+  const set<Loc>& locs = Board::valid_locs();
+  int count_player = 0;
+  int count_enemy = 0;
+  int *counter = 0;
+
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    int locval = b.get(*i);
+    if( locval == EMPTY )  continue;
+
+    counter = (locval & col) ? &count_player : &count_enemy;
+
+    (*counter) += ((locval & IS_RED) ? (*i).y + 1 : BOARD_HEIGHT - (*i).y);
+  }
+
+  if( count_player == 0 ) return static_cast<float>(-INFINITY+1);
+  if( count_enemy  == 0 ) return static_cast<float>( INFINITY-1);
+  return static_cast<float>(count_player - count_enemy);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

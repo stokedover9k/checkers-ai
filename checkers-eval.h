@@ -24,19 +24,27 @@ namespace EvalState {
      behind it that are not empty. */
   float defense(const Board& b, int is_color);
 
-  /* for each of player's pieces, count +1 for each direction (a1->c3 = c3->a1, does
-     NOT get counted twice) in which the piece cannot be taken. The count is then
-     multiplied by the number of opponent's kings + 1. */
+  /* for each of player's pieces, count +1 for each direction (a1->c3 = c3->a1,
+     does NOT get counted twice) in which the piece cannot be taken. The count
+     is then multiplied by the number of opponent's kings + 1. */
   float defense_kings(const Board& b, int is_color);
 
   /* count +1 for each of the player's pieces which are near a wall, -1 for each
      of the opponent's pieces next to a wall. NOTE: "wall" = side wall. */
   float defense_sides(const Board& b, int is_color);
 
-  /* counts +1 for each direction each piece can move in (including jumps). Returns
-     the ratio of the player's counts to the opponent's counts. If, no player moves
-     are available, returns -INFINITY. If no enemy moves - returns INFINITY. */
+  /* counts +1 for each direction each piece can move in (including jumps). 
+     Returns the ratio of the player's counts to the opponent's counts. If, no 
+     player moves are available, returns -INFINITY. If no enemy moves - returns 
+     INFINITY. */
   float dynamic_position(const Board& b, int is_color);
+
+  /* Sums the distances of each of the pieces from the back of the board (for
+     red, back of the board is top, for white - bottom; the back row is counted
+     as 1). Returns the player's sum minus the opponent's sum. Returns
+     -INFINITY+1 or INFINITY-1 if player has no pieces or opponent has no
+     pieces, respectively. */
+  float forward_position(const Board& b, int is_color);
 };
 
 typedef list<Loc> Action;

@@ -10,25 +10,33 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_TURNS 500
+#define MAX_TURNS 100
+#define MAX_EVAL_FUNCTIONS 7
 
 using namespace std;
 
+int p1_eval_weights[MAX_EVAL_FUNCTIONS];
+int p2_eval_weights[MAX_EVAL_FUNCTIONS];
+float p1_eval_state(const Board& b, int is_color);
+float p2_eval_state(const Board& b, int is_color);
+float comb_eval_state(const Board& b, int is_color, int *weights);
+
+//typedef float (*)(const Board& b, int) EvalFunc;
+float (*minimax_eval_functions[])(const Board&, int) = {
+  EvalState::count_pieces,
+  EvalState::count_kings,
+  EvalState::defense,
+  EvalState::defense_kings,
+  EvalState::defense_sides,
+  EvalState::dynamic_position,
+  EvalState::forward_position
+};
+
+//args: board array, filename
+void load_state(int*, char*);
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]) {
-  Checkers game;
-
-  Player *p1 = new Random_Player(string("Sisyphus"), IS_RED);
-  //Player *p2 = new Random_Player(string("Stoked"),   IS_WHITE);
-  /*
-  Player *p1 = new Minimax_Player(string("Sisyphus"), 
-				  EvalState::dynamic_position, 
-				  5, IS_RED);                      //*/
-
-  Player *p2 = new Minimax_Player(string("Stoked"), 
-				  EvalState::count_pieces,
-				  6, IS_WHITE);                    //*/
-
   const int r = RED;
   const int R = RED_KING;
   const int w = WHITE;
@@ -43,66 +51,157 @@ int main(int argc, char* argv[]) {
     w, 0, w, 0, w, 0, w, 0,
     0, w, 0, w, 0, w, 0, w,
     w, 0, w, 0, w, 0, w, 0,
-  };    //*/
-    
-  /*  Read in the board state */
-  if( argc > 1 ) {
-    int *state_ptr = s;
-    ifstream board_in(argv[1], ifstream::in);
-    
-    char c;
-    for( int i=BOARD_WIDTH*BOARD_HEIGHT; i>0 && board_in.good(); i-- ) {
-      c = (char)board_in.get();
-      if( !c ) break;
+  };
 
-      switch( c )
-	{
-	case '\n':  i++; break;
-	case 'r':   *(state_ptr++) = RED;          break;
-	case 'R':   *(state_ptr++) = RED_KING;     break;
-	case 'w':   *(state_ptr++) = WHITE;        break;
-	case 'b':   *(state_ptr++) = WHITE;        break;
-	case 'W':   *(state_ptr++) = WHITE_KING;   break;
-	case 'B':   *(state_ptr++) = WHITE_KING;   break;
-	case '.':   *(state_ptr++) = EMPTY;        break;
-	default:
-	  cout << "ERROR: Invalid character encountered while reading the board state: " << c << endl;
-	  exit(1);
+  Player *p1 = new Random_Player("DEFAULT: Red Random", IS_RED);
+  Player *p2 = new Human_Player("DEFAULT: White Human", IS_WHITE);
+
+  int starting_turn = 0;
+
+  try {
+    for( char** arg = argv+1; arg < argv+argc; arg++ ) {
+      cout << "argument: " << *arg << endl;
+
+      // load board
+      if( 0 == strcmp(*arg, "-s") || 
+	  0 == strcmp(*arg, "-state" ) ) {
+	load_state(s, *++arg);
+      }
+      // load player (EX: "-player red random");
+      else if( 0 == strcmp( *arg, "-p" ) ||
+	       0 == strcmp( *arg, "-player" ) ) {
+
+	++arg;  //color
+	int player_color = -1;
+	if(      0 == strcmp(*arg, "r") || 0 == strcmp(*arg, "red") ) {
+	  player_color = IS_RED;
 	}
+	else if( 0 == strcmp(*arg, "w") || 0 == strcmp(*arg, "white") ) {
+	  player_color = IS_WHITE;
+	}
+	else
+	  throw GameEx("main", "-player color invalid", player_color);
+
+	Player **p = (player_color == IS_RED) ? &p1 : &p2;
+	delete *p;
+	
+	char *player_type = *++arg;
+	string player_name;
+	if( player_color == IS_RED ) player_name = "Red ";
+	else                         player_name = "White ";
+	player_name += player_type;
+	
+	if     ( 0 == strcmp(player_type, "first"  ) ) { *p = new First_Player( player_name, player_color);  cout << "created player: first"  << endl; }
+	else if( 0 == strcmp(player_type, "random" ) ) { *p = new Random_Player(player_name, player_color);  cout << "created player: random" << endl; }
+	else if( 0 == strcmp(player_type, "human"  ) ) { *p = new Human_Player( player_name, player_color);  cout << "created player: human"  << endl; }
+	else if( 0 == strcmp(player_type, "minimax") ) {       //create the minimax player
+	  int minimax_depth = 0;
+	  if( 0 == strcmp(*++arg, "-d") )  minimax_depth = atoi(*++arg);
+	  else 
+	    throw GameEx("main", "-minimax player - no depth provided");
+	  if( minimax_depth < 1 )
+	    throw GameEx("main", "-minimax player - invalid value for search depth", minimax_depth);
+
+	  int *p_w = (player_color == IS_RED) ? p1_eval_weights : p2_eval_weights;
+	  for( int i=0; i<MAX_EVAL_FUNCTIONS; i++ )
+	    p_w[i] = atoi(*++arg);
+	  
+	  *p = new Minimax_Player(player_name,
+				  (player_color == IS_RED) ? p1_eval_state : p2_eval_state, 
+				  minimax_depth, player_color);
+	}
+	else 
+	  throw GameEx("main", "-player type invalid");
+      }
+      // starting color
+      else if( 0 == strcmp( *arg, "-s" ) ||
+	       0 == strcmp( *arg, "-start_color" ) ) {
+	string start_color(*++arg);
+	if     ( start_color == "r" || start_color == "red"   ) starting_turn = 0;
+	else if( start_color == "w" || start_color == "white" ) starting_turn = 1;
+	else
+	  throw GameEx("main", "-starting color option invalid");
+      }
     }
-    board_in.close();
+  } catch( GameEx e ) {
+    cout << "\nERROR during setup: " << e << endl;
+    exit(1);
   }
   
+
+
+  //---SET UP GAME
+  Checkers game;
   Board b(s, BOARD_WIDTH * BOARD_HEIGHT);
 
-  /*  Read in beginning side (color) */
-  int starting_turn = 0;
-  if( argc > 2 ) {
-    if( strcmp( argv[2], "r" ) == 0 || strcmp( argv[2], "red" ) == 0 ) {
-      starting_turn = 0;
-    }
-    else if( strcmp( argv[2], "w" ) == 0 || strcmp( argv[2], "white" ) == 0 ) {
-      starting_turn = 1;
-    }
-    else {
-      cout << "ERROR: color of starting player provided is invalid.\n";
-      exit(1);
-    }
-  }
-  
-  //--- RUN GAME
   try {
     game = Checkers(p1, p2, b, starting_turn);
     cout << game << endl;
-
-    for( int i=0; i < MAX_TURNS && game.do_turn(); i++ ) {
-      cout << "Turn #" << i << "\n" << game << endl;
-    }
   } catch( GameEx e ) {
-    cout << "\nERROR: " << e << endl;
+    cout << "\nERROR in setting up game: " << e << endl;
     cout << game << endl;
+  }
+
+  //---RUN GAME
+  for( int i=0; i < MAX_TURNS; i++ ) {
+    bool turn_success;
+    try {
+      turn_success = game.do_turn();
+    } catch( GameEx e ) {
+      char c;
+      cout << "\nERROR in game turn: " << e << endl;
+      cout << "Do you wish to replay this turn? (y/n): ";  cin >> c;
+      
+      if( c != 'y' && c != 'Y' ) return 1;
+
+      cout << game << endl;  i--; continue;  //replay turn
+    }
+
+    if( !turn_success ) return 0;    //someone won
+
+    cout << "Turn #" << i << "\n" << game << endl;
   }
 
   return 0;
 }
+
+void load_state(int* state_ptr, char* filename) {
+  ifstream board_in(filename, ifstream::in);
+    
+  char c;
+  for( int i=BOARD_WIDTH*BOARD_HEIGHT; i>0 && board_in.good(); i-- ) {
+    c = (char)board_in.get();
+    if( !c ) break;
+
+    switch( c )
+      {
+      case '\n':  i++; break;
+      case 'r':   *(state_ptr++) = RED;          break;
+      case 'R':   *(state_ptr++) = RED_KING;     break;
+      case 'w':   *(state_ptr++) = WHITE;        break;
+      case 'b':   *(state_ptr++) = WHITE;        break;
+      case 'W':   *(state_ptr++) = WHITE_KING;   break;
+      case 'B':   *(state_ptr++) = WHITE_KING;   break;
+      case '.':   *(state_ptr++) = EMPTY;        break;
+      default:
+	cout << "ERROR: Invalid character encountered while reading the board state: " << c << endl;
+	exit(1);
+      }
+  }
+  board_in.close();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+float p1_eval_state(const Board& b, int c) {
+  comb_eval_state(b, c, p1_eval_weights); }
+float p2_eval_state(const Board& b, int c) {
+  comb_eval_state(b, c, p2_eval_weights); }
+
+float comb_eval_state(const Board& b, int c, int *weights) {
+  float total = 0;
+  for( int i=0; i < MAX_EVAL_FUNCTIONS; i++ ) {
+    if( weights[i] == 0 )  continue;
+    total += static_cast<float>(weights[i]) * minimax_eval_functions[i](b, c);
+  }
+}

@@ -90,11 +90,6 @@ class Minimax {
   float min_value(const Board& state, int depth, float alpha, float beta, 
 		  int enemy_color=EMPTY);
 
-  /*
-  set<Action>& possible_actions(const Board& state, int color) const;
-  set<Action>& get_jump_moves_from(const Loc& from, const Board& b) const;
-  */
-
   bool terminal_state(const Board& state, int color, int current_search_depth);
 
   //if color is EMPTY, returns the opposite of _color member

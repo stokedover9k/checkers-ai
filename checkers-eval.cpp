@@ -70,7 +70,7 @@ float EvalState::defense_kings(const Board& b, int col) {
     int loc_val = b.get(*i);
     if( loc_val & col ) {
       const Loc l(*i);
-      if( l.y == 0 &&  l.y == BOARD_HEIGHT-1 )
+      if( l.y == 0 || l.y == BOARD_HEIGHT-1 )
 	{  total += 2;  continue;  }
       
       if( l.x == 0 || l.x == BOARD_WIDTH-1 )
@@ -85,7 +85,7 @@ float EvalState::defense_kings(const Board& b, int col) {
       enemy_kings++;
     }
   }
-  
+
   return static_cast<float>(total * (1 + enemy_kings));
 }
 

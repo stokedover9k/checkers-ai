@@ -138,14 +138,16 @@ float EvalState::dynamic_position(const Board& b, int col) {
       if( b.eval_move(m) != INVALID )  (*counter)++;
     }
     
+    delete &neigh;
     neigh = Board::get_jump_neighbours(*i);
     
     for( neigh_itr = neigh.begin(); neigh_itr != neigh.end(); neigh_itr++ ) {
       m.to = *neigh_itr;
       if( b.eval_move(m) != INVALID ) (*counter)++;
     }
+    delete &neigh;
   }
-
+  
   if( count_player == 0 ) {
     return static_cast<float>(-INFINITY);
   }

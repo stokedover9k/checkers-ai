@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_TURNS 150
+#define MAX_TURNS 200
 #define MAX_EVAL_FUNCTIONS 8
 
 using namespace std;
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
   };
 
   Player *p1 = new Random_Player("DEFAULT: Red Random", IS_RED);
-  Player *p2 = new Human_Player("DEFAULT: White Human", IS_WHITE);
+  Player *p2 = new Random_Player("DEFAULT: White Random", IS_WHITE);
 
   int starting_turn = 0;
 
@@ -215,9 +215,13 @@ int main(int argc, char* argv[]) {
       *game_record_2 << "turn " << i << endl << game << endl;
     }
   }
+  
+  cout << game.who_won() << endl;
 
-  if( game_record != NULL )	delete game_record;
-  if( game_record_2 != NULL )   delete game_record_2;
+  if( game_record != NULL )   { 
+    (*game_record).close();  delete game_record; }
+  if( game_record_2 != NULL ) { 
+    (*game_record_2).close();  delete game_record_2; }
   return 0;
 }
 

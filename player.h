@@ -16,6 +16,7 @@ class Player {
 
   void set_board(const Board&);
   const string& get_name();
+  const int get_color(void);
 
   virtual list<Loc> get_moves() = 0;
 

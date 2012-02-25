@@ -70,6 +70,19 @@ bool Checkers::do_turn() {
   return true;
 }
 
+string Checkers::who_won(void) {
+  set<Loc> locs;
+  board.get_move_candidates(locs, p1->get_color());
+  bool p1_has_moves = (locs.size() != 0);
+  board.get_move_candidates(locs, p2->get_color());
+  bool p2_has_moves = (locs.size() != 0);
+
+  if( !p1_has_moves && !p2_has_moves ) return string("neither can move");
+  if(  p1_has_moves &&  p2_has_moves ) return string("both can move");
+  if(  p1_has_moves && !p2_has_moves ) return string(p1->get_name());
+  return string(p2->get_name());
+}
+
 ostream& operator << (ostream& s, Checkers& c) {
   s << "   RED: " << c.p1->get_name() 
     << "   WHITE: " << c.p2->get_name() << endl

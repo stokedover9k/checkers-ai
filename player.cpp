@@ -14,6 +14,10 @@ const string& Player::get_name() {
   return name;
 }
 
+const int Player::get_color(void) {
+  return color;
+}
+
 set<Action>& Player::possible_actions(const Board& s, int color) {
   set<Action>& actions = *new set<Action>();
   set<Loc, less<Loc> > movables;

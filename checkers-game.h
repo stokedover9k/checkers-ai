@@ -6,6 +6,8 @@
 #include "player.h"
 #include <iostream>
 #include <list>
+#include <string>
+#include <set>
 
 using namespace std;
 
@@ -19,6 +21,8 @@ class Checkers {
      returns false if no turns are available
      throws GameEx exception if something goes wrong */
   bool do_turn();
+
+  string who_won(void);
   
   friend ostream& operator << (ostream&, Checkers&);
 

@@ -1,3 +1,26 @@
+/*
+  options:
+
+  -s filename
+  -state filename
+  starts game from the state described in file called filename
+
+  -c color
+  -color_start color
+  where color = r|red|w|white
+  Start the game with this color going first
+    
+  -p color type
+  -player color type
+  color = r|red|w|white
+  type = first|random|human|minimax
+  If type is minimax, immediately following it must be 
+    -d depth w1, w2, ...
+  where depth is the minimax search depth and w's are weights for the linear
+  combination of the evaluation functions used to evaluate states.
+
+ */
+
 #include <iostream>
 #include <fstream>
 #include "checkers-game.h"
@@ -63,7 +86,7 @@ int main(int argc, char* argv[]) {
     for( char** arg = argv+1; arg < argv+argc; arg++ ) {
       cout << "argument: " << *arg << endl;
 
-      // load board
+      // load board  [-s|-state]
       if( 0 == strcmp(*arg, "-s") || 
 	  0 == strcmp(*arg, "-state" ) ) {
 	load_state(s, *++arg);
@@ -115,8 +138,8 @@ int main(int argc, char* argv[]) {
 	  throw GameEx("main", "-player type invalid");
       }
       // starting color
-      else if( 0 == strcmp( *arg, "-s" ) ||
-	       0 == strcmp( *arg, "-start_color" ) ) {
+      else if( 0 == strcmp( *arg, "-c" ) ||
+	       0 == strcmp( *arg, "-color_start" ) ) {
 	string start_color(*++arg);
 	if     ( start_color == "r" || start_color == "red"   ) starting_turn = 0;
 	else if( start_color == "w" || start_color == "white" ) starting_turn = 1;

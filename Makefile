@@ -9,10 +9,10 @@ play: $(OBJS)
 exceptions.o: exceptions.cpp exceptions.h
 	$(CC) $(CFLAGS) $<
 
-checkers-env.o: checkers-env.cpp checkers-env.h exceptions.h
+checkers-env.o: checkers-env.cpp checkers-env.h exceptions.o
 	$(CC) $(CFLAGS) $<
 
-checkers-game.o: checkers-game.cpp checkers-game.h checkers-env.h
+checkers-game.o: checkers-game.cpp checkers-game.h checkers-env.o
 	$(CC) $(CFLAGS) $<
 
 checkers-eval.o: checkers-eval.cpp checkers-eval.h checkers-env.o exceptions.o

@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_TURNS 100
-#define MAX_EVAL_FUNCTIONS 7
+#define MAX_TURNS 150
+#define MAX_EVAL_FUNCTIONS 8
 
 using namespace std;
 
@@ -29,7 +29,8 @@ float (*minimax_eval_functions[])(const Board&, int) = {
   EvalState::defense_kings,
   EvalState::defense_sides,
   EvalState::dynamic_position,
-  EvalState::forward_position
+  EvalState::forward_position,
+  EvalState::win_or_lose
 };
 
 //args: board array, filename
@@ -199,6 +200,8 @@ float p2_eval_state(const Board& b, int c) {
   comb_eval_state(b, c, p2_eval_weights); }
 
 float comb_eval_state(const Board& b, int c, int *weights) {
+  if( c != IS_RED && c != IS_WHITE )
+    throw GameEx("comb_eval_state", "invalid color value", c);
   float total = 0;
   for( int i=0; i < MAX_EVAL_FUNCTIONS; i++ ) {
     if( weights[i] == 0 )  continue;

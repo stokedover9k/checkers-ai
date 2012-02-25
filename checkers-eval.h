@@ -9,7 +9,8 @@
 #include "exceptions.h"
 #include "player.h"
 
-#define INFINITY 1000000
+#define INFINITY 100000
+#define LARGE_INFINITY 100000000
 #define MINIMAX_MAX_DEPTH 8
 
 using namespace std;
@@ -43,9 +44,14 @@ namespace EvalState {
   /* Sums the distances of each of the pieces from the back of the board (for
      red, back of the board is top, for white - bottom; the back row is counted
      as 1). Returns the player's sum minus the opponent's sum. Returns
-     -INFINITY+1 or INFINITY-1 if player has no pieces or opponent has no
+     -INFINITY or INFINITY if player has no pieces or opponent has no
      pieces, respectively. */
   float forward_position(const Board& b, int is_color);
+
+  /* Checks each player for the number of movable pieces. If only the player has
+     pieces that can move, returns INFINITY. If only opponent has pieces that
+     can move, returns -INFINITY. Otherwise, returns 0; */
+  float win_or_lose(const Board& b, int is_color);
 };
 
 typedef list<Loc> Action;

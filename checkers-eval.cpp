@@ -1,10 +1,6 @@
 #include "checkers-eval.h"
 
 float EvalState::count_pieces(const Board& b, int is_color) {
-  
-  if( is_color != IS_RED && is_color != IS_WHITE )
-    throw GameEx("EvalState::count_pieces", "invalid color", is_color);
-
   int enemy_color = (is_color == IS_RED) ? IS_WHITE : IS_RED;
   int total = 0;
   int w = b.get_width();
@@ -23,9 +19,6 @@ float EvalState::count_pieces(const Board& b, int is_color) {
 }
 
 float EvalState::count_kings(const Board& b, int is_color) {
-  if( is_color != IS_RED && is_color != IS_WHITE )
-    throw GameEx("EvalState::piece_kings", "invalid color", is_color);
-
   int total = 0;
   int w = b.get_width();
   int h = b.get_height();
@@ -42,9 +35,6 @@ float EvalState::count_kings(const Board& b, int is_color) {
 }
 
 float EvalState::defense(const Board& b, int is_color) {
-  if( is_color != IS_RED && is_color != IS_WHITE )
-    throw GameEx("EvalState::defense", "invalid color", is_color);
-  
   const set<Loc>& locs = Board::valid_locs();
   int dy = (is_color == IS_RED) ? -1 : 1;
   int ysafe = (is_color == IS_RED) ? 0 : BOARD_HEIGHT-1;
@@ -71,9 +61,6 @@ float EvalState::defense(const Board& b, int is_color) {
 }
 
 float EvalState::defense_kings(const Board& b, int col) {
-  if( col != IS_RED && col != IS_WHITE )
-    throw GameEx("EvalState::defense_kings", "invalid color", col);
-  
   const set<Loc>& locs = Board::valid_locs();
   int total = 0;
   int enemy_kings = 0;
@@ -103,9 +90,6 @@ float EvalState::defense_kings(const Board& b, int col) {
 }
 
 float EvalState::defense_sides(const Board& b, int col) {
-  if( col != IS_RED && col != IS_WHITE )
-    throw GameEx("EvalState::defense_kings", "invalid color", col);
-  
   int total = 0;
   int enemy = (col == IS_RED) ? IS_WHITE : IS_RED;
   int locval;
@@ -134,9 +118,6 @@ float EvalState::defense_sides(const Board& b, int col) {
 }
 
 float EvalState::dynamic_position(const Board& b, int col) {
-  if( col != IS_RED && col != IS_WHITE )
-    throw GameEx("EvalState::dynamic_position", "invalid color", col);
-  
   const set<Loc>& locs = Board::valid_locs();
   int count_player = 0;
   int count_enemy  = 0;
@@ -166,18 +147,15 @@ float EvalState::dynamic_position(const Board& b, int col) {
   }
 
   if( count_player == 0 ) {
-    return static_cast<float>(-INFINITY+1);
+    return static_cast<float>(-INFINITY);
   }
   if( count_enemy == 0  ) {
-    return static_cast<float>(INFINITY-1);
+    return static_cast<float>(INFINITY);
   }
   return static_cast<float>(count_player) / static_cast<float>(count_enemy);
 }  
 
 float EvalState::forward_position(const Board& b, int col) {
-  if( col != IS_RED && col != IS_WHITE )
-    throw GameEx("EvalState::forward_position", "invalid color", col);
-
   const set<Loc>& locs = Board::valid_locs();
   int count_player = 0;
   int count_enemy = 0;
@@ -192,9 +170,25 @@ float EvalState::forward_position(const Board& b, int col) {
     (*counter) += ((locval & IS_RED) ? (*i).y + 1 : BOARD_HEIGHT - (*i).y);
   }
 
-  if( count_player == 0 ) return static_cast<float>(-INFINITY+1);
-  if( count_enemy  == 0 ) return static_cast<float>( INFINITY-1);
+  if( count_player == 0 ) return static_cast<float>(-INFINITY);
+  if( count_enemy  == 0 ) return static_cast<float>( INFINITY);
   return static_cast<float>(count_player - count_enemy);
+}
+
+float EvalState::win_or_lose(const Board& b, int is_color) {
+  set<Loc> locs;
+  int enemy = (is_color == IS_RED) ? IS_WHITE : IS_RED;
+
+  b.get_move_candidates(locs, enemy);
+  if( locs.size() == 0 ) {
+    return static_cast<float>(INFINITY);
+  }
+
+  b.get_move_candidates(locs, is_color);
+  if( locs.size() == 0 ) {
+    return static_cast<float>(-INFINITY);
+  }
+  return static_cast<float>(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -222,7 +216,8 @@ StateVal Minimax::minimax_decision(const Board& state, int depth) {
     throw GameEx("Minimax::minimax_decision", "depth too high (>MAX_DEPTH)",
 		 depth, MINIMAX_MAX_DEPTH);
   
-  float max_val = max_value(state, depth, -INFINITY, INFINITY, _color);
+  float max_val = max_value(state, depth, -LARGE_INFINITY, 
+			    LARGE_INFINITY, _color);
   return StateVal(_last_max_a, max_val);
 }
 
@@ -232,10 +227,11 @@ float Minimax::max_value(const Board& state, int depth,
 
   if( terminal_state(state, color, depth) ) {
     float v = _eval_state(state, color);
+    //cout << "-max: state terminal: " << v << endl;
     return v;
   }
   
-  float max_v = -INFINITY;
+  float max_v = -LARGE_INFINITY;
   float tmp_v;
   Board tmp_b;
   set<Action>::iterator max_a;
@@ -285,6 +281,7 @@ float Minimax::max_value(const Board& state, int depth,
     
     alpha = (alpha > max_v) ? alpha : max_v;
   }
+
   _last_max_a = Action(*max_a);
   delete &actions;
   return max_v;
@@ -300,7 +297,7 @@ float Minimax::min_value(const Board& state, int depth,
     return v;
   }
 
-  float min_v = INFINITY;
+  float min_v = LARGE_INFINITY;
   float tmp_v;
   Board tmp_b;
   set<Action>::iterator min_a;

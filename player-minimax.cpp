@@ -17,7 +17,6 @@ Minimax_Player::Minimax_Player(const string& n,
 }
 
 list<Loc> Minimax_Player::get_moves() {
-  cout << name << " generating move..." << endl;
   Minimax minimax(color, _eval_func_ptr);
   return minimax.minimax_decision(board, _search_depth).action();
 }

@@ -5,6 +5,14 @@
   -state filename
   starts game from the state described in file called filename
 
+  -r filename
+  -record filename
+  logs the game states into the file called filename
+
+  -r2 filename
+  -record2 filename
+  logs the game states into the file called filename
+
   -c color
   -color_start color
   where color = r|red|w|white
@@ -82,6 +90,9 @@ int main(int argc, char* argv[]) {
 
   int starting_turn = 0;
 
+  ofstream *game_record   = NULL;
+  ofstream *game_record_2 = NULL;
+
   try {
     for( char** arg = argv+1; arg < argv+argc; arg++ ) {
       cout << "argument: " << *arg << endl;
@@ -90,6 +101,16 @@ int main(int argc, char* argv[]) {
       if( 0 == strcmp(*arg, "-s") || 
 	  0 == strcmp(*arg, "-state" ) ) {
 	load_state(s, *++arg);
+      }
+      // record game states [-r|-record]
+      else if( 0 == strcmp(*arg, "-r") ||
+	       0 == strcmp(*arg, "-record" ) ) {
+	game_record = new ofstream(*++arg);
+      }
+      // record game states [-r2|-record2]
+      else if( 0 == strcmp(*arg, "-r2") ||
+	       0 == strcmp(*arg, "-record2") ) {
+	game_record_2 = new ofstream(*++arg);
       }
       // load player (EX: "-player red random");
       else if( 0 == strcmp( *arg, "-p" ) ||
@@ -181,11 +202,22 @@ int main(int argc, char* argv[]) {
       cout << game << endl;  i--; continue;  //replay turn
     }
 
-    if( !turn_success ) return 0;    //someone won
+    if( !turn_success ) {     //someone won
+      cout << game << endl << "turn " << i << endl;
+      break;
+    }
 
-    cout << "Turn #" << i << "\n" << game << endl;
+    cout << "turn " << i << " complete" << endl;
+    if( game_record != NULL ) {
+      *game_record << "turn " << i << endl << game << endl;
+    }
+    if( game_record_2 != NULL ) {
+      *game_record_2 << "turn " << i << endl << game << endl;
+    }
   }
 
+  if( game_record != NULL )	delete game_record;
+  if( game_record_2 != NULL )   delete game_record_2;
   return 0;
 }
 

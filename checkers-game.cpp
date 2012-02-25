@@ -21,7 +21,6 @@ bool Checkers::do_turn() {
 
   p->set_board(board);
   list<Loc> moves( p->get_moves() );
-  cout << "Moves acquired (" << p->get_name() << "). Length: " << moves.size() << endl;
 
   /*
   for( list<Loc>::iterator i = moves.begin(); i != moves.end(); i++ )

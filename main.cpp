@@ -188,7 +188,8 @@ int main(int argc, char* argv[]) {
   }
 
   //---RUN GAME
-  for( int i=0; i < MAX_TURNS; i++ ) {
+  int i;
+  for( i=1; i < MAX_TURNS; i++ ) {
     bool turn_success;
     try {
       turn_success = game.do_turn();
@@ -203,7 +204,6 @@ int main(int argc, char* argv[]) {
     }
 
     if( !turn_success ) {     //someone won
-      cout << game << endl << "turn " << i << endl;
       break;
     }
 
@@ -216,6 +216,7 @@ int main(int argc, char* argv[]) {
     }
   }
   
+  cout << game << endl << "turn " << i << endl;
   cout << game.who_won() << endl;
 
   if( game_record != NULL )   { 

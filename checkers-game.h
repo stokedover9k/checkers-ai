@@ -19,10 +19,13 @@ class Checkers {
 
   /* returns true if the turn can be taken and is taken
      returns false if no turns are available
-     throws GameEx exception if something goes wrong */
-  bool do_turn();
+     throws GameEx exception if something goes wrong.
+     Provide a player pointer to get a turn from that particular player. */
+  bool do_turn(Player *p=NULL);
 
   string who_won(void);
+
+  int get_turn_num(void);
   
   friend ostream& operator << (ostream&, Checkers&);
 

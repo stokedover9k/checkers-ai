@@ -189,10 +189,20 @@ int main(int argc, char* argv[]) {
 
   //---RUN GAME
   int i;
+  bool first_random_move_complete = false;
   for( i=1; i < MAX_TURNS; i++ ) {
     bool turn_success;
     try {
-      turn_success = game.do_turn();
+      if( !first_random_move_complete ) {
+	int tmp_c = (game.get_turn_num() % 2 == 0) ? IS_RED : IS_WHITE;
+	Player *tmp_player = new Random_Player("DEFAULT: First Random", tmp_c);
+	turn_success = game.do_turn(tmp_player);
+	first_random_move_complete = true;
+	delete tmp_player;
+      }
+      else {
+	turn_success = game.do_turn();
+      }
     } catch( GameEx e ) {
       char c;
       cout << "\nERROR in game turn: " << e << endl;

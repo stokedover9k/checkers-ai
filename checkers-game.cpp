@@ -10,13 +10,22 @@ Checkers::Checkers(Player *a, Player *b, const Board& brd, int turn) :
   board(brd), p1(a), p2(b), turn_num(turn)
 {  }
 
-bool Checkers::do_turn() {
+bool Checkers::do_turn(Player *pptr) {
   int color = (turn_num % 2 == 0) ? IS_RED : IS_WHITE;
-  Player* p = (color == IS_RED) ? p1 : p2;
+  Player *p;
+  if( pptr == NULL )
+    p = (color == IS_RED) ? p1 : p2;
+  else {
+    if( pptr->get_color() != color )
+      throw GameEx("Checkers::do_turn",
+		   "special player provided with incorrect color",
+		   color, pptr->get_color());
+    p = pptr;
+  }
   set<Loc, less<Loc> > permitted_moves;
   bool must_jump = board.get_move_candidates(permitted_moves, color);
   if( permitted_moves.size() == 0 ) return false;
-
+  
   cout << "Starting turn: " << p->get_name() << endl;
 
   p->set_board(board);
@@ -82,6 +91,8 @@ string Checkers::who_won(void) {
   if(  p1_has_moves && !p2_has_moves ) return string(p1->get_name());
   return string(p2->get_name());
 }
+
+int Checkers::get_turn_num(void) {  return turn_num;  }
 
 ostream& operator << (ostream& s, Checkers& c) {
   s << "   RED: " << c.p1->get_name() 

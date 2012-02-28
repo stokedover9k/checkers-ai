@@ -6,13 +6,12 @@ float EvalState::count_pieces(const Board& b, int is_color) {
   int w = b.get_width();
   int h = b.get_height();
 
-  for( int y=0; y<h; y++ ) {
-    for( int x=0; x<w; x++ ) {
-      int val = b.get(Loc(x,y));
-      if( val == EMPTY )  continue;
-      if     ( val & is_color    ) total += 1;
-      else if( val & enemy_color ) total -= 1;
-    }
+  const set<Loc>& locs = Board::valid_locs();
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    int val = b.get(*i);
+    if( val == EMPTY )  continue;
+    if     ( val & is_color    ) total += 1;
+    else if( val & enemy_color ) total -= 1;
   }
   
   return static_cast<float>(total);
@@ -23,11 +22,12 @@ float EvalState::count_kings(const Board& b, int is_color) {
   int w = b.get_width();
   int h = b.get_height();
 
-  for( int y=0; y<h; y++ ) {
-    for( int x=0; x<w; x++ ) {
-      int val = b.get(Loc(x,y));
-      if( val == EMPTY )  continue;
-      total += (val & (is_color|IS_KING) ) ? 1 : -1;
+  const set<Loc>& locs = Board::valid_locs();
+  for( set<Loc>::iterator i = locs.begin(); i != locs.end(); i++ ) {
+    int val = b.get(*i);
+    if( val == EMPTY )  continue;
+    if( val & IS_KING ) {
+      total += (val & is_color) ? 1 : -1;
     }
   }
   

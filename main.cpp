@@ -148,12 +148,22 @@ int main(int argc, char* argv[]) {
 	    throw GameEx("main", "-minimax player - invalid value for search depth", minimax_depth);
 
 	  int *p_w = (player_color == IS_RED) ? p1_eval_weights : p2_eval_weights;
-	  for( int i=0; i<MAX_EVAL_FUNCTIONS; i++ )
+	  for( int i=0; i<MAX_EVAL_FUNCTIONS; i++ ) {
 	    p_w[i] = atoi(*++arg);
+	    cout << p_w[i] << " ";
+	  }
+	  cout << endl;
 	  
-	  *p = new Minimax_Player(player_name,
-				  (player_color == IS_RED) ? p1_eval_state : p2_eval_state, 
-				  minimax_depth, player_color);
+	  if( player_color == IS_RED ) {
+	    *p = new Minimax_Player(player_name,
+				    p1_eval_state,
+				    minimax_depth, player_color);
+	  }
+	  else if( player_color == IS_WHITE ) {
+	    *p = new Minimax_Player(player_name,
+				    p2_eval_state,
+				    minimax_depth, player_color);
+	  }
 	}
 	else 
 	  throw GameEx("main", "-player type invalid");
@@ -275,6 +285,6 @@ float comb_eval_state(const Board& b, int c, int *weights) {
   float total = 0;
   for( int i=0; i < MAX_EVAL_FUNCTIONS; i++ ) {
     if( weights[i] == 0 )  continue;
-    total += static_cast<float>(weights[i]) * minimax_eval_functions[i](b, c);
+    total += static_cast<float>(weights[i]) * (minimax_eval_functions[i])(b, c);
   }
 }
